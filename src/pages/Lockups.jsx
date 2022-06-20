@@ -560,11 +560,7 @@ const Lockups = () => {
     const classes = useStyles();
 
     const [showSpinner, setShowSpinner] = useState(false);
-    const [vestingStartTimestampDate, setVestingStartTimestampDate] = useState(null);
-    const [vestingCliffTimestampDate, setVestingCliffTimestampDate] = useState(null);
-    const [vestingEndTimestampDate, setVestingEndTimestampDate] = useState(null);
     const [vestingSchedule, setVestingSchedule] = useState(0);
-    const [hideVesting, setHideVesting] = useState(true);
     const [lockupStartDate, setLockupStartDate] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [checkedContractData, setCheckedContractData] = useState(false);
@@ -691,13 +687,7 @@ const Lockups = () => {
           lockup_duration: "0",
           lockup_timestamp: lockupTimestamp,
           release_duration: releaseDuration,
-          vesting_schedule: hideVesting ? null : {
-            VestingSchedule: {
-              start_timestamp: vestingStartTimestampDate ? dateToNs(vestingStartTimestampDate) : null,
-              cliff_timestamp: vestingCliffTimestampDate ? dateToNs(vestingCliffTimestampDate) : null,
-              end_timestamp: vestingEndTimestampDate ? dateToNs(vestingEndTimestampDate) : null,
-            }
-          },
+          vesting_schedule: null,
         };
 
         const publicKey = nearApi.utils.PublicKey.fromString(ledgerKey);
@@ -801,13 +791,7 @@ const Lockups = () => {
               lockup_duration: "0",
               lockup_timestamp: lockupTimestamp,
               release_duration: releaseDuration,
-              vesting_schedule: hideVesting ? null : {
-                VestingSchedule: {
-                  start_timestamp: vestingStartTimestampDate ? dateToNs(vestingStartTimestampDate) : null,
-                  cliff_timestamp: vestingCliffTimestampDate ? dateToNs(vestingCliffTimestampDate) : null,
-                  end_timestamp: vestingEndTimestampDate ? dateToNs(vestingEndTimestampDate) : null,
-                }
-              },
+              vesting_schedule: null,
             },
             new Decimal(lockupGas).toString(), amount,
           )
@@ -882,13 +866,7 @@ const Lockups = () => {
             lockup_duration: "0",
             lockup_timestamp: lockupTimestamp,
             release_duration: releaseDuration,
-            vesting_schedule: hideVesting ? null : {
-              VestingSchedule: {
-                start_timestamp: vestingStartTimestampDate ? dateToNs(vestingStartTimestampDate) : null,
-                cliff_timestamp: vestingCliffTimestampDate ? dateToNs(vestingCliffTimestampDate) : null,
-                end_timestamp: vestingEndTimestampDate ? dateToNs(vestingEndTimestampDate) : null,
-              }
-            }
+            vesting_schedule: null,
           },
         gas: new Decimal(lockupGas).toString(),
         deposit: amount
@@ -927,7 +905,6 @@ const Lockups = () => {
 
 
     const handleVestingSelectChange = (event) => {
-      setHideVesting(event.target.value === 0);
       setVestingSchedule(event.target.value);
     };
 
@@ -969,14 +946,7 @@ const Lockups = () => {
       setCheckedContractData(!checkedContractData ? false : result);
     }
 
-    const handleVestingSelectDates = (event) => {
-      const vestingCliffDate = new Date(new Decimal(dateToNs(event)).plus(3.154e+16).div(1_000_000).toNumber());
-      const vestingEndDate = new Date(new Decimal(dateToNs(event)).plus(1.261e+17).div(1_000_000).toNumber());
-      setVestingStartTimestampDate(event)
-      setVestingCliffTimestampDate(vestingCliffDate)
-      setVestingEndTimestampDate(vestingEndDate)
-
-    };
+  const [customReleaseDuration, setCustomReleaseDuration] = useState(false);
 
     return (
       <div className={classes.root}>
@@ -1046,35 +1016,6 @@ const Lockups = () => {
                       validatorListener={amountValidatorListener}
                       errorMessages={['this field is required', 'minimum NEAR 3.5', 'please enter the amount in NEAR']}
                     />
-                    <Grid item xs={12} md={12}>
-                      <div className={classes.alertRoot}>
-                        <Collapse in={openAlert2}>
-                          <Alert
-                            severity="success"
-                            color="info"
-                            action={
-                              <IconButton
-                                aria-label="close"
-                                color="inherit"
-                                size="small"
-                                onClick={() => {
-                                  setOpenAlert2(false);
-                                }}
-                              >
-                                <CloseIcon fontSize="inherit"/>
-                              </IconButton>
-                            }
-                          >
-                            <AlertTitle>Vesting Schedule</AlertTitle>
-                            <b>Attention! Lockup with vesting CAN ONLY BE CANCELLED BY FOUNDATION</b>
-                            <br/><br/>
-                            The contract could have both lockup and vesting schedules. The current amount of non-liquid
-                            tokens are calculated as the maximum between lockup and vesting logic. If at least one
-                            mechanism said the tokens are locked, then they are still locked.
-                          </Alert>
-                        </Collapse>
-                      </div>
-                    </Grid>
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={4}>
                         <FormControl variant="outlined" className={classes.formControl}>
@@ -1087,107 +1028,11 @@ const Lockups = () => {
                             label="Vesting Schedule"
                           >
                             <MenuItem value={0}>None - Linear Release</MenuItem>
-                            <MenuItem value={1}>Vesting 1-year Cliff</MenuItem>
                           </Select>
                         </FormControl>
                       </Grid>
-                      {!hideVesting ?
-                        <>
-                          <Grid item xs={12} md={4}>
-                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                              <KeyboardDatePicker
-                                required={!hideVesting}
-                                fullWidth
-                                variant="inline"
-                                inputVariant="outlined"
-                                autoOk
-                                id="vestingStartTimestampId"
-                                label="Vesting Start Date"
-                                format="MMM dd yyyy"
-                                minDate="2020-10-13"
-                                value={vestingStartTimestampDate}
-                                InputAdornmentProps={{position: "start"}}
-                                onChange={handleVestingSelectDates}
-                              />
-                            </MuiPickersUtilsProvider>
-                          </Grid>
-
-
-                          {/*
-                        <Grid item xs={12} md={4}>
-                          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                            <KeyboardDatePicker
-                              required={!hideVesting}
-                              fullWidth
-                              variant="inline"
-                              inputVariant="outlined"
-                              autoOk
-                              id="vestingCliffTimestampId"
-                              label="Cliff Timestamp"
-                              format="MMM dd yyyy"
-                              value={vestingCliffTimestampDate}
-                              InputAdornmentProps={{position: "start"}}
-                              onChange={setVestingCliffTimestampDate}
-                            />
-                          </MuiPickersUtilsProvider>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                            <KeyboardDatePicker
-                              required={!hideVesting}
-                              fullWidth
-                              variant="inline"
-                              inputVariant="outlined"
-                              autoOk
-                              id="vestingEndTimestampId"
-                              label="End Timestamp"
-                              format="MMM dd yyyy"
-                              value={vestingEndTimestampDate}
-                              InputAdornmentProps={{position: "start"}}
-                              onChange={setVestingEndTimestampDate}
-                            />
-                          </MuiPickersUtilsProvider>
-                        </Grid>
-                        */}
-                        </>
-                        : null
-                      }
-                    </Grid>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12}>
-                        {vestingCliffTimestampDate && vestingEndTimestampDate ?
-                          <div>
-                            <div className={classes.alertRoot}>
-                              <Collapse in={openAlert3}>
-                                <Alert
-                                  severity="info"
-                                  color="info"
-                                  action={
-                                    <IconButton
-                                      aria-label="close"
-                                      color="inherit"
-                                      size="small"
-                                      onClick={() => {
-                                        setOpenAlert3(false);
-                                      }}
-                                    >
-                                      <CloseIcon fontSize="inherit"/>
-                                    </IconButton>
-                                  }
-                                >
-                                  25% of locked tokens will be unlocked
-                                  on <b>{vestingCliffTimestampDate.toDateString()}</b> and remaining balance will be
-                                  release linearly over the next 3 years, with all tokens unlocked
-                                  on <b>{vestingEndTimestampDate.toDateString()}</b>
-                                </Alert>
-                              </Collapse>
-                            </div>
-                          </div>
-                          : null}
-                      </Grid>
                     </Grid>
 
-                    {hideVesting ?
                       <Grid container spacing={3}>
                         <Grid item xs={12} md={12}>
                           <div className={classes.alertRoot}>
@@ -1242,17 +1087,19 @@ const Lockups = () => {
                           </MuiPickersUtilsProvider>
                         </Grid>
                         <Grid item xs={12} md={6}>
-                          <SelectValidator
-                            variant="outlined"
-                            className={classes.card}
-                            id="releaseDurationId"
-                            name="releaseDuration"
-                            label="Release Duration"
-                            value={state.releaseDuration}
-                            onChange={handleChange}
-                            SelectProps={{
-                              native: false
-                            }}
+                          <TextValidator select={!customReleaseDuration}
+                                         validators={["isNumber"]}
+                                         errorMessages={["Enter the number of months"]}
+                                         variant="outlined"
+                                         className={classes.card}
+                                         id="releaseDurationId"
+                                         name="releaseDuration"
+                                         label="Release Duration"
+                                         value={state.releaseDuration}
+                                         onChange={handleChange}
+                                         SelectProps={{
+                                           native: false
+                                         }}
                           >
                             <MenuItem value={null}><em>None</em></MenuItem>
                             <MenuItem value={3}>3 months</MenuItem>
@@ -1262,11 +1109,12 @@ const Lockups = () => {
                             <MenuItem value={24}>2 Years (24 months)</MenuItem>
                             <MenuItem value={36}>3 Years (36 months)</MenuItem>
                             <MenuItem value={48}>4 Years (48 months)</MenuItem>
-                          </SelectValidator>
+                            <MenuItem value={null} onClick={()=>{setCustomReleaseDuration(true);}}><em>Custom (months)</em></MenuItem>
+                          </TextValidator>
+
                         </Grid>
 
                       </Grid>
-                      : null}
 
                     <Grid container justify="flex-start" spacing={1} style={{marginTop: 20, marginLeft: 6}}>
                       <Grid item xs={12} md={6}>
