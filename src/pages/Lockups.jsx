@@ -560,7 +560,6 @@ const Lockups = () => {
     const classes = useStyles();
 
     const [showSpinner, setShowSpinner] = useState(false);
-    const [vestingSchedule, setVestingSchedule] = useState(0);
     const [lockupStartDate, setLockupStartDate] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [checkedContractData, setCheckedContractData] = useState(false);
@@ -904,10 +903,6 @@ const Lockups = () => {
     }
 
 
-    const handleVestingSelectChange = (event) => {
-      setVestingSchedule(event.target.value);
-    };
-
     const [lockup, setLockup] = useState(null);
     const [showLockupData, setShowLockupData] = useState(false);
 
@@ -1016,23 +1011,6 @@ const Lockups = () => {
                       validatorListener={amountValidatorListener}
                       errorMessages={['this field is required', 'minimum NEAR 3.5', 'please enter the amount in NEAR']}
                     />
-                    <Grid container spacing={3}>
-                      <Grid item xs={12} md={4}>
-                        <FormControl variant="outlined" className={classes.formControl}>
-                          <InputLabel id="vestingScheduleLabel">Vesting Schedule</InputLabel>
-                          <Select
-                            labelId="vestingScheduleLabel"
-                            onChange={handleVestingSelectChange}
-                            id="vestingScheduleId"
-                            value={vestingSchedule}
-                            label="Vesting Schedule"
-                          >
-                            <MenuItem value={0}>None - Linear Release</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                    </Grid>
-
                       <Grid container spacing={3}>
                         <Grid item xs={12} md={12}>
                           <div className={classes.alertRoot}>
